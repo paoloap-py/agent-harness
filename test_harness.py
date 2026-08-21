@@ -55,6 +55,13 @@ CASES = [
     ("5 pipeline       main thread reads 2",
      "layers/05_context_pipelines.py",
      ["main thread context: ~2 tokens", "9,602 tokens"], []),
+
+    ("example         all five wrapped round a real loop",
+     "examples/real_loop.py",
+     ["DENIED by reads-need-a-path-inside-work",
+      "observations untouched by the reviewer: 2 entries",
+      "after reset -> chat []"],
+     ["sk-live-DO-NOT-LEAK"]),
 ]
 
 

@@ -59,6 +59,15 @@ execute = boundary([("delete-needs-approval",
 
 The demos teach each layer. This is the part you keep.
 
+`examples/real_loop.py` is all five wrapped around a real provider loop. It runs
+with no API key: without one it prints the request it would have sent and uses a
+canned tool call, which is the same dry-run-by-default idea Layer 4 teaches.
+
+```bash
+python3 examples/real_loop.py                  # canned, runs anywhere
+OPENAI_API_KEY=sk-... python3 examples/real_loop.py
+```
+
 ## What bites first
 
 Six things that catch people, in the order they hit:
