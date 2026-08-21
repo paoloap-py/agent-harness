@@ -59,6 +59,28 @@ execute = boundary([("delete-needs-approval",
 
 The demos teach each layer. This is the part you keep.
 
+## What bites first
+
+Six things that catch people, in the order they hit:
+
+1. **Your loop must be able to read a refusal.** `boundary` returns a
+   `"DENIED by ..."` string in the same slot a tool result goes. If your loop
+   treats any string as success, the agent sails past the guard believing it
+   worked.
+2. **A rule that matches too broadly deadlocks.** Same call, same deterministic
+   refusal, forever, at full token price. `boundary(rules, max_repeats=3)`
+   detects identical consecutive denials and changes the message so the loop has
+   something new to react to. Tune it; do not remove it.
+3. **`allowlist` returns `None`, not a path.** That is the refusal. Handle it
+   before it reaches `open()`, or you trade a security bug for a `TypeError`.
+4. **`dry_run` consumes a `dry_run` kwarg.** If your real function already takes
+   a parameter by that name, rename one of them.
+5. **`Store.reset()` clears only the conversation.** That is the point, and it
+   will surprise you the first time disk state outlives a reset you meant as a
+   wipe.
+6. **`Distiller` counts words, not tokens.** The ratio is honest, the absolute
+   is not. Swap in your provider's tokenizer before quoting a number.
+
 ## The principle underneath all five
 
 Move enforcement out of the prompt and into deterministic code.

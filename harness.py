@@ -15,7 +15,7 @@ __all__ = ["boundary", "allowlist", "Store", "read_only", "dry_run", "Distiller"
 
 
 # ---------------------------------------------------------------- layer 1
-def boundary(rules):
+def boundary(rules, max_repeats=3):
     """Refuse calls before they execute. `rules` is a list of
     (name, predicate, reason). Deny LOUDLY: the agent is told why, so it can
     adapt instead of retrying blind, and you can see the refusal in the log.
@@ -25,13 +25,29 @@ def boundary(rules):
                                      and not c.args.get("approved_by_human"),
                            "deletion requires an explicit human approval flag")]
         execute = boundary(NEEDS_APPROVAL)(execute)
+
+    A denial the agent cannot act on becomes a retry loop, and a retry loop
+    against a deterministic rule never terminates on its own: same call, same
+    refusal, forever, at full token price. After `max_repeats` identical
+    consecutive denials this stops explaining and says so, which gives the loop
+    something new to react to and gives you a greppable marker.
     """
     def wrap(execute):
+        state = {"last": None, "n": 0}
+
         @functools.wraps(execute)
         def guarded(call):
             for name, deny_if, reason in rules:
                 if deny_if(call):
+                    key = (name, getattr(call, "name", None), repr(getattr(call, "args", None)))
+                    state["n"] = state["n"] + 1 if key == state["last"] else 1
+                    state["last"] = key
+                    if state["n"] > max_repeats:
+                        return (f"DENIED by {name}, and this is attempt "
+                                f"{state['n']}. The rule will not change. Stop "
+                                f"retrying and do something else.")
                     return f"DENIED by {name}: {reason}"
+            state["last"], state["n"] = None, 0
             return execute(call)
         return guarded
     return wrap
@@ -132,6 +148,8 @@ class Distiller:
         self.subagent_tokens = 0
 
     def run(self, explore, distill):
+        """Counts WORDS, not tokens. It is a ratio you can trust and an absolute
+        you cannot: swap in your provider's tokenizer before you quote a bill."""
         raw = explore()
         self.subagent_tokens += len(str(raw).split())
         out = distill(raw)

@@ -97,6 +97,17 @@ def test_module():
     checks.append(("distiller bills the main thread only for the answer",
                    d.main_tokens == 2 and d.subagent_tokens == 5000))
 
+    rep = harness.boundary([("no-delete", lambda c: c.name == "delete_file", "needs approval")],
+                           max_repeats=3)(lambda c: "ran")
+    first3 = [rep(C("delete_file", path="x")) for _ in range(3)]
+    fourth = rep(C("delete_file", path="x"))
+    checks += [
+        ("deny-loop quiet for max_repeats", all("attempt" not in r for r in first3)),
+        ("deny-loop escalates after",       "Stop retrying" in fourth),
+        ("deny-loop resets on a new call",  rep(C("read", path="ok.md")) == "ran"
+                                            and "attempt" not in rep(C("delete_file", path="x"))),
+    ]
+
     bad = 0
     for label, ok_ in checks:
         print(f"  {'ok  ' if ok_ else 'FAIL'}  module: {label}")
@@ -118,7 +129,7 @@ def main():
         else:
             print(f"  ok    {label}")
     failed += test_module()
-    total = len(CASES) + 11
+    total = len(CASES) + 14
     print(f"\n{total - failed}/{total} passed")
     return 1 if failed else 0
 
