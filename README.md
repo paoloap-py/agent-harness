@@ -28,7 +28,19 @@ python3 layers/01_execution_boundary.py        # same agent, nothing deleted
 | 4 | **Verification loops** | Who checks the work, and can it silently fix things? | reviewer rewrites code → read-only |
 | 5 | **Context pipelines** | What does the model see, and what does that cost? | 9,602 tokens → 2 |
 
-All ten scripts run. `for f in failures/*.py layers/*.py; do python3 "$f"; done`
+## Run it
+
+```bash
+python3 run_all.py        # all five layers, guard off then on, side by side
+python3 test_harness.py   # asserts every difference above, 10 checks
+```
+
+No dependencies and no API key. The model is replaced by a scripted stand-in that
+emits a fixed sequence of tool calls, so the only thing that changes between the
+two columns is the harness.
+
+`test_harness.py` checks both directions: each failure script must still fail, and
+each layer script must still prevent it. Remove a guard and the suite goes red.
 
 ## The principle underneath all five
 
