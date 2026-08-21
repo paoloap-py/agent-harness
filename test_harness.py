@@ -115,6 +115,24 @@ def test_module():
                                             and "attempt" not in rep(C("delete_file", path="x"))),
     ]
 
+    import asyncio
+    async def aex(c): return "ran async"
+    ag = harness.boundary([("no-delete", lambda c: c.name == "delete_file", "needs approval")])(aex)
+    a_den = asyncio.run(ag(C("delete_file")))
+    a_ok = asyncio.run(ag(C("read")))
+    h = harness.host_allowlist(["api.openai.com"])
+    checks += [
+        ("async execute is awaited, not returned raw", a_ok == "ran async"),
+        ("async denial is a Denied",     isinstance(a_den, harness.Denied)),
+        ("Denied is still a str",        isinstance(a_den, str)),
+        ("Denied carries its rule",      a_den.rule == "no-delete"),
+        ("denials counter increments",   ag.denials.get("no-delete") == 1),
+        ("host allowed",                 h("https://api.openai.com/v1") == "api.openai.com"),
+        ("host suffix attack refused",   h("https://api.openai.com.evil.com/x") is None),
+        ("host in query refused",        h("https://evil.com/?x=api.openai.com") is None),
+        ("version is exported",          harness.__version__ == "0.1.0"),
+    ]
+
     bad = 0
     for label, ok_ in checks:
         print(f"  {'ok  ' if ok_ else 'FAIL'}  module: {label}")
@@ -136,7 +154,7 @@ def main():
         else:
             print(f"  ok    {label}")
     failed += test_module()
-    total = len(CASES) + 14
+    total = len(CASES) + 23
     print(f"\n{total - failed}/{total} passed")
     return 1 if failed else 0
 
