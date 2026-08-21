@@ -5,7 +5,7 @@ twenty turns ago. It then makes the opposite one.
 
 Run:  python3 failures/03_no_persistence.py
 """
-CONVERSATION = ["decided: use postgres, not sqlite, because we need concurrent writers"]
+CONVERSATION = ["decided: postgres, because we need concurrent writers"]
 
 def restart():
     CONVERSATION.clear()          # context reset. the decision was only ever here.
