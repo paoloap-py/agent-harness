@@ -1,7 +1,6 @@
 # agent-harness
 
 [![tests](https://github.com/paoloap-py/agent-harness/actions/workflows/test.yml/badge.svg)](https://github.com/paoloap-py/agent-harness/actions/workflows/test.yml)
-[![PyPI](https://img.shields.io/pypi/v/agent-harness.svg)](https://pypi.org/project/agent-harness/)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/downloads/)
 
 The companion code for **[The Complete Guide to Agent Harnesses (With Code)](https://medium.com/data-science-collective)**.
@@ -53,13 +52,7 @@ each layer script must still prevent it. Remove a guard and the suite goes red.
 
 ## Use it in your own agent
 
-One file, no dependencies. Copy it in, or install it:
-
-```bash
-pip install agent-harness
-```
-
-Wrap the `execute` your loop already calls. Sync or async — `boundary()` detects
+One file, no dependencies. Copy `harness.py` into your project and wrap the `execute` your loop already calls. Sync or async — `boundary()` detects
 a coroutine function, because handing an async loop an un-awaited coroutine is a
 guard that silently does nothing.
 
