@@ -15,7 +15,7 @@ import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from shared.fake_agent import FakeAgent, ToolCall, agent_loop
 
-FILES = {"notes.md": "keep", "cache.tmp": "junk", "draft.md": "keep"}
+FILES = {"notes.md": "keep", "cache.tmp": "junk", "client-deliverable.md": "the thing you are paid for"}
 
 
 class Denied(Exception):
@@ -58,7 +58,7 @@ if __name__ == "__main__":
     agent = FakeAgent([
         ToolCall("list_files"),
         ToolCall("delete_file", {"path": "cache.tmp"}),
-        ToolCall("delete_file", {"path": "draft.md"}),
+        ToolCall("delete_file", {"path": "client-deliverable.md"}),
     ])
     guarded = boundary(NEEDS_APPROVAL)(execute)
     for call, result in agent_loop(agent, guarded):

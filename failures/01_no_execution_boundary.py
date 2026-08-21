@@ -12,7 +12,7 @@ from shared.fake_agent import FakeAgent, ToolCall, agent_loop
 
 SYSTEM_PROMPT = "IMPORTANT: never delete a file without asking the user first."
 
-FILES = {"notes.md": "keep", "cache.tmp": "junk", "draft.md": "keep"}
+FILES = {"notes.md": "keep", "cache.tmp": "junk", "client-deliverable.md": "the thing you are paid for"}
 
 
 def execute(call):
@@ -29,10 +29,10 @@ if __name__ == "__main__":
     agent = FakeAgent([
         ToolCall("list_files"),
         ToolCall("delete_file", {"path": "cache.tmp"}),
-        ToolCall("delete_file", {"path": "draft.md"}),   # not junk. not asked.
+        ToolCall("delete_file", {"path": "client-deliverable.md"}),   # not junk. not asked.
     ])
     print(f"system prompt: {SYSTEM_PROMPT!r}\n")
     for call, result in agent_loop(agent, execute):
         print(f"  {call.name}({call.args}) -> {result}")
     print(f"\nfiles remaining: {sorted(FILES)}")
-    print("draft.md is gone. The agent never asked. The rule was in the prompt the whole time.")
+    print("client-deliverable.md is gone. The agent never asked. The rule was in the prompt the whole time.")
