@@ -42,6 +42,23 @@ two columns is the harness.
 `test_harness.py` checks both directions: each failure script must still fail, and
 each layer script must still prevent it. Remove a guard and the suite goes red.
 
+## Use it in your own agent
+
+`harness.py` is the same five layers with the teaching scaffolding removed. One
+file, no dependencies, nothing to install: copy it in and wrap the `execute`
+your loop already calls.
+
+```python
+from harness import boundary, allowlist, Store, read_only, dry_run, Distiller
+
+execute = boundary([("delete-needs-approval",
+                     lambda c: c.name == "delete_file"
+                               and not c.args.get("approved_by_human"),
+                     "deletion requires an explicit human approval flag")])(execute)
+```
+
+The demos teach each layer. This is the part you keep.
+
 ## The principle underneath all five
 
 Move enforcement out of the prompt and into deterministic code.

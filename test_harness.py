@@ -58,6 +58,52 @@ CASES = [
 ]
 
 
+def test_module():
+    """harness.py is the liftable version. Same guarantees, asserted here so a
+    change to the demos cannot quietly diverge from the code people import."""
+    import harness
+
+    class C:
+        def __init__(self, n, **a): self.name, self.args = n, a
+
+    ex = harness.boundary([("no-delete",
+                            lambda c: c.name == "delete_file" and not c.args.get("approved_by_human"),
+                            "needs approval")])(lambda c: f"ran {c.name}")
+    checks = [
+        ("boundary denies",        ex(C("delete_file", path="x")).startswith("DENIED")),
+        ("boundary allows flag",   ex(C("delete_file", path="x", approved_by_human=True)) == "ran delete_file"),
+        ("allowlist admits",       harness.allowlist(["work"])("work/a.md") == "work/a.md"),
+        ("allowlist refuses",      harness.allowlist(["work"])("secrets/k") is None),
+        ("allowlist refuses ..",   harness.allowlist(["work"])("work/../secrets/k") is None),
+    ]
+    st = harness.Store()
+    st.put("chat", None, "hi"); st.put("disk", "d.md", "pg"); st.put("config", "tx", True); st.reset()
+    checks += [("store reset keeps disk+config", st.chat == [] and st.disk and st.config)]
+    try:
+        st.put("nope", "k", "v"); checks.append(("store refuses bad kind", False))
+    except ValueError:
+        checks.append(("store refuses bad kind", True))
+
+    snap = harness.read_only({"a": 1}); snap["a"] = 99
+    checks.append(("read_only is a copy", snap["a"] == 99))
+
+    @harness.dry_run
+    def apply_fix(path, new): return f"wrote {path}"
+    checks += [("dry_run is default",  apply_fix("t.py", "x").startswith("DRY RUN")),
+               ("dry_run off acts",    apply_fix("t.py", "x", dry_run=False) == "wrote t.py")]
+
+    d = harness.Distiller()
+    d.run(lambda: "lorem " * 5000, lambda x: "ANSWER: 42")
+    checks.append(("distiller bills the main thread only for the answer",
+                   d.main_tokens == 2 and d.subagent_tokens == 5000))
+
+    bad = 0
+    for label, ok_ in checks:
+        print(f"  {'ok  ' if ok_ else 'FAIL'}  module: {label}")
+        bad += 0 if ok_ else 1
+    return bad
+
+
 def main():
     failed = 0
     for label, script, must, must_not in CASES:
@@ -71,7 +117,9 @@ def main():
                 print(f"          {p}")
         else:
             print(f"  ok    {label}")
-    print(f"\n{len(CASES) - failed}/{len(CASES)} passed")
+    failed += test_module()
+    total = len(CASES) + 11
+    print(f"\n{total - failed}/{total} passed")
     return 1 if failed else 0
 
 
