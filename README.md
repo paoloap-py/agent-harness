@@ -47,14 +47,14 @@ each layer script must still prevent it. Remove a guard and the suite goes red.
 Move enforcement out of the prompt and into deterministic code.
 
 A rule in a system prompt is a bet that the model remembers it, interprets it the way
-you meant, and follows it under context pressure. That bet pays out most of the time,
-which is what makes it dangerous: it fails rarely enough that you trust it and often
-enough to hurt.
+you meant, and follows it under context pressure. The model wins that bet most of the time, which is
+the reason you stop checking.
 
 Layer 1 is the generalised form of a real gate. The rule "never apply an edit the
 human has not approved" lived in a skill file as prose for two weeks and was violated
 eleven times in a single session. Rewritten as a pre-execution hook that denies the
-call, it has not been violated since, because it cannot be.
+call, it has been wrong twice since, both times because the rule was written too
+narrowly. Both times there was a line to open and point at.
 
 ## Audit your own setup
 
