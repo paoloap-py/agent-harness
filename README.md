@@ -1,18 +1,20 @@
 # The Agent Harness Checklist
 
-A coding agent loop is six lines, twenty with error handling. Everything anyone values sits above it,
-in the harness: the code that decides what the model is allowed to do, what it can
+A coding agent loop is six lines, twenty with error handling. Everything else is the harness: the code that decides what the model is allowed to do, what it can
 reach, what it remembers, who checks its work, and what it gets to see.
 
-This repo ships five layers. For each one there is a **failure** you can run and a
-**layer** that prevents it. Same agent, same script, same system prompt, both times.
+This repo ships five layers. For each one you can run the layer with its guard on,
+and the same agent with it off. Same agent, same script, same system prompt, both times.
 The only thing that changes is where the rule lives.
 
 Every demo runs with **no API key**. The model is replaced by a scripted stand-in,
-because a failure you cannot reproduce is an anecdote.
+because a difference you can run beats a claim you have to trust.
 
 ```bash
-python3 failures/01_no_execution_boundary.py   # watch it delete the wrong file
+git clone https://github.com/paoloap-py/agent-harness-guide
+cd agent-harness-guide
+
+python3 failures/01_no_execution_boundary.py   # guard off: deletes the client file
 python3 layers/01_execution_boundary.py        # same agent, nothing deleted
 ```
 
